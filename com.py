@@ -1,15 +1,19 @@
 import subprocess
 
+
 class commands:
+    def __getitem__(self, item):
+        return item
 
     # just run python code
-    def py(script,m):
+    def py(script, m, memory):
         try:
             exec(script[0])
+            return " "
         except Exception as error:
-            print(error)
-    
-    def bat(s, m):
+            return error
+
+    def bat(s, m, memory):
         script = s[0]
         # Add "@echo off" to hide commands if "-o" modifier is present
         if "-o" in m:
@@ -17,48 +21,49 @@ class commands:
         # Run the script
         result = subprocess.run(script, shell=True, capture_output=True, text=True)
         # Check the return code
-        if result.returncode == 0:
-            # Script executed successfully
-            return result.stdout
-        else:
-            # Script execution failed, return the captured stderr
-            return result.stderr
+        return result
 
     # literally just print()
-    def say(s,m, memory):
-        if "-n" in m:
-            print(s[0], end=" ")
+    def say(s, m, memory):
+        if s[0][0] == "%":
+            key = s[0][1:]  # Remove the '%' prefix
+            if key in memory:
+                value = memory[key]
+            else:
+                value = f"Undefined variable: {key}"
         else:
-            print(s[0])
-    
+            value = s[0]
+
+        if "-n" in m:
+            print(value, end=" ")
+        else:
+            print(value)
+
+        return " "
+
     # declare variable
-    def var(s, m, memory):
+    def var(s, m, mem):
+        memory = mem
         name = s[0].lower()
         value = s[1]
-        kind = s[2]
+        try:
+            kind = s[2]
+        except IndexError:
+            return "no variable type entered"
 
         if kind == "int":
             try:
                 memory[name] = int(value)
             except ValueError as v:
-                print(f"{v} || not a number")
+                return f"{v} || not a number"
+
         elif kind == "str":
             memory[name] = value
+
         elif kind == "bool":
             try:
                 memory[name] = bool(int(value))
             except ValueError:
-                memory[name] = bool((value))
-        elif (kind == "dy"):
-            # bool
-            if (value == True) or (value == False):
-                memory[name] = bool((value))
-
-            isstr = False
-            for i in list("qwertyuiopasdfghjklzxcvbnm"):
-                if i in list(value):
-                    isstr == True
-                    break
-            
+                memory[name] = bool(value)
 
         return memory
