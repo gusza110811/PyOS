@@ -34,13 +34,6 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def call_without_parentheses(func):
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
 def PyOS_quit(reason, code=0):
     print(f"\nOS shutting down because {reason}")
 
@@ -77,7 +70,7 @@ def parse_command(entered):
 # literally just parsing above
 
 # List of valid command names
-valid_commands = ["exit", "py", "bat", "say", "var"]
+valid_commands = ["help", "exit", "py", "bat", "say", "var"]
 
 
 # Function to suggest the closest command name
@@ -104,26 +97,28 @@ def loop():
     user = input(fore.RESET + back.RESET + ">>>")
     try:
         comfunc, commod, comargs = parse_command(user)
-        print(parse_command(user))
+        print(f"{comfunc}, {commod}, {comargs}")
 
         tmp = f"commands.{comfunc}({comargs}, {commod}, {memory})"
 
         if comfunc == "exit":
 
             PyOS_quit("exit command was used")
+        elif comfunc == "help":
+            print(f"available commands: {valid_commands}")
         elif comfunc in valid_commands:
             # main command stuff
 
             returned = eval(tmp)
             if isinstance(returned, str):
-                print(returned)
+                print(returned, end="")
             else:
                 memory = returned
         else:
             closest_command = suggest_command(comfunc)
             print(fore.RED + f"Invalid command: '{comfunc}'. Did you mean '{closest_command}'?")
-    except IndexError:
-        print(fore.RED + "Empty command! Please enter a command.")
+    except IndexError as v:
+        print(fore.RED + f"{v}: Bad command! make sure to use backslashes (\\) and enter enough arguments")
 
 
 start()

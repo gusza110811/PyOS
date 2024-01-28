@@ -9,7 +9,7 @@ class commands:
     def py(script, m, memory):
         try:
             exec(script[0])
-            return " "
+            return ""
         except Exception as error:
             return error
 
@@ -21,7 +21,7 @@ class commands:
         # Run the script
         result = subprocess.run(script, shell=True, capture_output=True, text=True)
         # Check the return code
-        return result
+        return result.stdout
 
     # literally just print()
     def say(s, m, memory):
@@ -34,28 +34,36 @@ class commands:
         else:
             value = s[0]
 
-        if "-n" in m:
+        if '-n' in m:
             print(value, end=" ")
         else:
             print(value)
 
-        return " "
+        return ""
 
     # declare variable
     def var(s, m, mem):
+        # i keep forgetting this command's syntax damm it
+        # var {name}\{type}\{value}
+
         memory = mem
         name = s[0].lower()
-        value = s[1]
+        value = s[2]
+
+        if value[0] == "#":
+            value = value.removeprefix("#")
+            value = eval(value)
+
         try:
-            kind = s[2]
-        except IndexError:
-            return "no variable type entered"
+            kind = s[1]
+        except IndexError as v:
+            return f"{v}"
 
         if kind == "int":
             try:
                 memory[name] = int(value)
             except ValueError as v:
-                return f"{v} || not a number"
+                return f"not a number"
 
         elif kind == "str":
             memory[name] = value
